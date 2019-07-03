@@ -1,0 +1,15 @@
+package: GitWeb
+import:
+- package: github.com/astaxie/beego
+  version: v1.11.1
+  subpackages:
+  - config
+  - context
+  - orm
+- package: github.com/go-sql-driver/mysql
+  version: v1.4.1
+testImport:
+- package: github.com/smartystreets/goconvey
+  version: 1.6.3
+  subpackages:
+  - convey
