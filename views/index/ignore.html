@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>忽略目录</title>
+{{ template "layout/htmlHeader.html" }}
+    <script>
+        url = "{{ .url }}";
+
+        // 改变忽略目录状态
+        function ajaxChangeIgnoreStatus(status, id) {
+            let ids = '';
+            if (undefined == id) {
+                ids = getCheckBoxValues()
+            } else {
+                ids = id;
+            }
+            if (ids == '') UIkit.notify("<i class='uk-icon-close'></i>至少选择一项", {status: 'danger'});
+
+            $.ajax({
+                "type"    : "POST",
+                "url"     : "{{ urlfor "List.UpdateIgnoreStatus" }}",
+                "async"   : true,
+                "dataType": "json",
+                "data"    : {
+                    "ids"   : ids,
+                    "status": status,
+                },
+                "success" : function (data) {
+                    UIkit.notify("<i class='uk-icon-check'></i> 状态切换成功！", {
+                        status: 'success', timeout: 1500, onClose: function () {
+                            window.location.reload();
+                        }
+                    });
+                    return false;
+                },
+                "error"   : function (data) {
+                    console.log(data)
+                }
+            });
+        }
+
+        // 删除忽略目录
+        function ajaxDelIgnore(id) {
+            let ids = '';
+            if (undefined == id) {
+                ids = getCheckBoxValues()
+            } else {
+                ids = id;
+            }
+            if (ids == '') UIkit.notify("<i class='uk-icon-close'></i>至少选择一项", {status: 'danger'});
+
+            $.ajax({
+                "type"    : "POST",
+                "url"     : "{{ urlfor "List.DeleteIgnore" }}",
+                "async"   : true,
+                "dataType": "json",
+                "data"    : {
+                    "ids": ids,
+                },
+                "success" : function (data) {
+                    UIkit.notify("<i class='uk-icon-check'></i>删除成功！", {
+                        status: 'success', timeout: 1500, onClose: function () {
+                            window.location.reload();
+                        }
+                    });
+                    return false;
+                },
+                "error"   : function (data) {
+                    console.log(data)
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+{{ template "layout/js_Header.html" }}
+{{ template "layout/header.html" }}
+<div class="uk-container uk-container-center uk-margin-large-top">
+    <div class="uk-panel uk-panel-box">
+        <div class="uk-clearfix uk-margin-small-bottom">
+            <h3 class="uk-panel-title uk-float-left">
+                <i class="uk-icon-list"></i>
+                忽略列表
+            </h3>
+        </div>
+    {{ if .dir}}
+        <form class="uk-form">
+            <div class="uk-overflow-container">
+            {{ range $page,$dirG := .dir }}
+                <div id="page_{{ $page }}"
+                {{ if ne $page 1 }}
+                     class="uk-hidden"
+                {{ end }}
+                >
+                    <table class="uk-table uk-table-hover">
+                        <thead>
+                        <tr>
+                            <th><input type="checkbox" onclick="chooseAll(this)"></th>
+                            <th>项目名</th>
+                            <th>项目路径</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        {{ range $i,$dir:= $dirG }}
+                        <tr>
+                            <td><input type="checkbox" class="child-checkbox" value="{{ .Id }}"></td>
+                            <td>{{ .Name }}</td>
+                            <td>{{ .Path }}</td>
+                            <td>
+                                <span class="uk-badge {{ if eq .Status 1 }} uk-badge-success {{ else }} uk-badge-warning {{ end }}">
+                                {{ if eq .Status 1 }}启用{{ else }}禁用{{ end }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="uk-button-group">
+                                    <a href="javascript:;"
+                                       class="uk-button uk-button-mini {{ if eq .Status 1 }}uk-button-danger{{ else }}uk-button-success{{ end }}"
+                                       onclick="ajaxChangeIgnoreStatus('{{ if eq .Status 1 }}0{{else}}1{{end}}','{{ $i }}')">{{ if eq .Status 1 }}
+                                        禁用{{ else }}启用{{ end }}</a>
+                                    <a href="javascript:;" class="uk-button uk-button-mini uk-button-primary"
+                                       onclick="ajaxDelIgnore('{{ .Id }}')">删除</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {{ end }}
+                        </tbody>
+
+                    </table>
+                </div>
+            {{ end }}
+            </div>
+            <div class="uk-button-group">
+                <a href="javascript:;" class="uk-button uk-button-small uk-button-success"
+                   onclick="ajaxChangeIgnoreStatus(1)">批量启用</a>
+                <a href="javascript:;" class="uk-button uk-button-small uk-button-danger"
+                   onclick="ajaxChangeIgnoreStatus(0)">批量禁用</a>
+                <a href="javascript:;" class="uk-button uk-button-small uk-button-primary"
+                   onclick="ajaxDelIgnore()">批量删除</a>
+            </div>
+        </form>
+        <ul class="uk-pagination" data-uk-pagination="{items:{{ .count }}, itemsOnPage:{{ .limit }}}"></ul>
+    {{ else }}
+        {{ template "layout/nil.html" }}
+        {{ end }}
+    </div>
+</div>
+</body>
+<script>
+    $('[data-uk-pagination]').on('select.uk.pagination', function (e, pageIndex) {
+        var page = pageIndex + 1;
+        $("#page_" + page).siblings().addClass("uk-hidden");
+        $("#page_" + page).toggleClass("uk-hidden");
+    });
+</script>
+</html>

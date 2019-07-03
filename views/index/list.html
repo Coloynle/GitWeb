@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>项目列表</title>
+{{ template "layout/htmlHeader.html" }}
+</head>
+<script>
+    // 设置路径
+    function ajaxChangePath(that) {
+        var button = $(that);
+        button.attr('disabled', 'true');
+        $.ajax({
+            "type"    : "POST",
+            "url"     : "{{ urlfor "Menu.SetWorkPath" }}",
+            "async"   : true,
+            "dataType": "json",
+            "data"    : {
+                "path": $("#SetWorkPath").val()
+            },
+            "success" : function (data) {
+                if (data["code"] == 1) {
+                    $("#WorkPath").html(data["message"]);
+                    $('#editPath').addClass("uk-hidden");
+                    $('#WorkPath').removeClass("uk-hidden");
+                    button.removeAttr('disabled');
+                    UIkit.notify("<i class='uk-icon-check'></i>修改成功！请重新获取项目列表。<a href='javascript:;' onclick='resetDir(this);'>立即获取</a>", {status: 'success'});
+                } else if (data["code"] == 0) {
+                    UIkit.notify("<i class='uk-icon-close'></i> " + data["message"], {status: 'danger'});
+                    $('#WorkPath').removeClass("uk-hidden");
+                    button.removeAttr('disabled');
+                }
+            }
+        });
+    }
+
+    // 取消修改二次确认
+    function cancelEdit() {
+        UIkit.modal.confirm("确认取消修改？", function () {
+            $('#editPath').addClass("uk-hidden");
+            $('#WorkPath').removeClass("uk-hidden");
+        });
+    }
+
+    //重新获取项目文件
+    function resetDir(that) {
+        // 旋转更新图标
+        $(that).find('i').addClass("uk-icon-spin");
+        $(that).attr('disabled', 'true');
+        var wait = UIkit.notify("<i class='uk-icon-spinner uk-icon-spin'></i><span> 获取中...</span>", {timeout: 0});
+        $.ajax({
+            "type"    : "GET",
+            "url"     : "{{ urlfor "List.ResetDir" }}",
+            "async"   : true,
+            "dataType": "json",
+            "success" : function (data) {
+                // 停止旋转
+                $(that).find('i').removeClass("uk-icon-spin");
+                wait.close();
+                if (data["code"] == 1) {
+                    UIkit.notify("<i class='uk-icon-check'></i>" + data["message"] + "！", {
+                        status: 'success', timeout: 1000, onClose: function () {
+                            window.location.reload();
+                        }
+                    });
+                } else if (data["code"] == 0) {
+                    UIkit.notify("<i class='uk-icon-close'></i> " + data["message"], {status: 'danger'});
+                }
+            }
+        });
+    }
+
+    // 修改项目路径
+    function editDir() {
+        $('#WorkPath').addClass("uk-hidden");
+        $('#editPath').removeClass("uk-hidden");
+        $('#SetWorkPath').val($('#WorkPath').html());
+    }
+
+    // 更新项目
+    function ajaxResetGit(id) {
+        let ids = '';
+        if (undefined == id) {
+            ids = getCheckBoxValues()
+        } else {
+            ids = id;
+        }
+        if (ids == '') UIkit.notify("<i class='uk-icon-close'></i>至少选择一项", {status: 'danger'});
+
+        var wait = UIkit.notify("<i class='uk-icon-spinner uk-icon-spin'></i><span> 更新中...</span>", {timeout: 0});
+        $.ajax({
+            "type"    : "POST",
+            "url"     : "{{ urlfor "List.ResetGit" }}",
+            "async"   : true,
+            "dataType": "json",
+            "data"    : {
+                "ids": ids,
+            },
+            "success" : function (data) {
+                // 关闭状态条
+                wait.close();
+                $('#specific').html('');
+                $.each(data, function (path, value) {
+                    var html = "<p><b>" + path + "</b></p>";
+                    $('#specific').append(html);
+                    $.each(value, function (i, val) {
+                        var html = "";
+                        switch (i) {
+                            case 'a_resetInfo':
+                                html += "<dt>cmd: git reset --hard</dt>";
+                                break;
+                            case 'b_checkoutMaster':
+                                html += "<dt>cmd: git checkout master</dt>";
+                                break;
+                            case 'c_fetch':
+                                html += "<dt>cmd: git fetch</dt>";
+                                break;
+                            case 'd_rebaseMaster':
+                                html += "<dt>cmd: git rebase</dt>";
+                                break;
+                            case 'e_clean':
+                                html += "<dt>cmd: git clean -df</dt>";
+                                break;
+                            case 'f_checkoutNowBranch':
+                                html += "<dt>cmd: git checkout initBranch</dt>";
+                                break;
+                            case 'g_rebaseNowBranch':
+                                html += "<dt>cmd: git rebase origin/initBranch</dt>";
+                                break;
+                            default :
+                                html += "<dt>" + i + "</dt>";
+                                break;
+                        }
+                        if (null != val) {
+                            $.each(val, function (key, value) {
+                                html += "<dd>" + value + "</dd>";
+                            });
+                        } else {
+                            html += "<dd>Success</dd>";
+                        }
+                        html += "</div>";
+                        $('#specific').append(html);
+                    })
+
+                });
+                UIkit.notify("<i class='uk-icon-check'></i> 更新完成！<a href='javascript:;' data-uk-modal=\"{target:'#details',center:true}\">查看详情</a>", {status: 'success'});
+
+            },
+            "error"   : function (data) {
+                console.log(data)
+            }
+        });
+    }
+
+    // 改变分支
+    function ajaxChangeBranch(id, page) {
+        $.ajax({
+            "type"    : "POST",
+            "url"     : "{{ urlfor "List.GetBranchList" }}",
+            "async"   : true,
+            "dataType": "json",
+            "data"    : {
+                "id"  : id,
+                "page": page,
+            },
+            "success" : function (data) {
+                changeBranch(data, id);
+                return false;
+            },
+            "error"   : function (data) {
+                console.log(data)
+            }
+        });
+    }
+
+    // 改变分支方法
+    function changeBranch(list, id) {
+        var html = "<h3>当前选择：<span id='chooseBranchName'>None</span></h3><ul class='uk-list uk-list-line uk-overflow-container' style='max-height: 700px;'>";
+        $.each(list, function (k, v) {
+            html += "<li data-value='" + v + "' onclick='chooseBranch(this);' style='cursor: pointer;'><a href='javascript:;' style='text-decoration:none;'><i class='uk-hidden uk-icon-check uk-text-warning uk-margin-right'></i>" + v + "</a></li>"
+        });
+        html += "</ul>";
+        UIkit.modal.confirm(html, function () {
+            var wait = UIkit.notify("<i class='uk-icon-spinner uk-icon-spin'></i><span> 切换分支中...</span>", {timeout: 0});
+            var branch = $('#chooseBranchName').data('value');
+            $.ajax({
+                "type"    : "POST",
+                "url"     : "{{ urlfor "List.ChangeBranch" }}",
+                "async"   : true,
+                "dataType": "json",
+                "data"    : {
+                    "id"    : id,
+                    "branch": branch,
+                },
+                "success" : function (data) {
+                    // 关闭状态条
+                    wait.close();
+                    $('#specific').html('');
+                    if (data == null) {
+                        UIkit.notify("<i class='uk-icon-close'></i> 切换失败！清检查分支", {status: 'danger'});
+                        return false;
+                    }
+                    /*$.each(data, function (i, val) {
+                        var html = "";
+                        html += "<dt>cmd: git checkout " + branch + "</dt>";
+                        html += "<dd>" + val + "</dd>";
+                        html += "</div>";
+                        $('#specific').append(html);
+                    });*/
+                    UIkit.notify("<i class='uk-icon-check'></i> 切换完成！", {
+                        status: 'success', timeout: 1500, onClose: function () {
+                            window.location.reload();
+                        }
+                    });
+                },
+                "error"   : function (data) {
+                    console.log(data)
+                }
+            })
+        });
+    }
+
+    // 分支列表点击事件
+    function chooseBranch(li) {
+        var value;
+        li = $(li);
+        li.find('i').toggleClass('uk-hidden');
+        if ($('#chooseBranchName').html() == li.data('value')) {
+            value = 'None';
+            $('#chooseBranchName').data('value', '');
+        } else {
+            value = li.data('value');
+            $('#chooseBranchName').data('value', li.data('value'))
+        }
+        $('#chooseBranchName').html(value);
+        li.siblings('li').each(function () {
+            $(this).find('i').addClass('uk-hidden');
+        })
+    }
+
+    // git项目目录加入忽略目录
+    function ajaxIgnorePath(id) {
+        let ids = '';
+        if (undefined == id) {
+            ids = getCheckBoxValues()
+        } else {
+            ids = id;
+        }
+        if (ids == '') UIkit.notify("<i class='uk-icon-close'></i> 请至少选择一项", {status: 'danger'});
+
+        $.ajax({
+            "type"    : "POST",
+            "url"     : "{{ urlfor "List.SetIgnore" }}",
+            "async"   : true,
+            "dataType": "json",
+            "data"    : {
+                "ids"   : ids,
+                "status": 1,
+            },
+            "success" : function (data) {
+                UIkit.notify("<i class='uk-icon-check'></i> 忽略成功！", {
+                    status: 'success', timeout: 1500, onClose: function () {
+                        window.location.reload();
+                    }
+                });
+                return false;
+            },
+            "error"   : function (data) {
+                console.log(data)
+            }
+        });
+    }
+
+
+    url = "{{ .url }}";
+</script>
+<body>
+
+{{ template "layout/js_Header.html" }}
+{{ template "layout/header.html" }}
+
+<div class="uk-container uk-container-center uk-margin-large-top">
+    <div class="uk-panel uk-panel-box">
+        <div class="uk-clearfix uk-margin-small-bottom">
+            <h3 class="uk-panel-title uk-float-left">
+                <i class="uk-icon-list"></i>
+                项目列表
+            </h3>
+            <div class="uk-float-right">
+                <h3 class="uk-panel-title uk-float-left">
+                    <i class="uk-icon-folder-open"></i>
+                    当前工作目录：
+                    <span id="WorkPath" class="">{{ .workPath }}</span>
+                </h3>
+                <form class="uk-form uk-display-inline-block uk-hidden" id="editPath">
+                    <input class=" uk-form-small" type="text" id="SetWorkPath" name="path">
+                    <div class="uk-button-group">
+                        <button class="uk-button uk-button-small uk-button-success" data-uk-tooltip="{pos:'top-left'}"
+                                title="修改" onclick="ajaxChangePath(this);return false;">
+                            <i class="uk-icon-check"></i>
+                        </button>
+                        <button class="uk-button uk-button-small uk-button-danger" data-uk-tooltip="{pos:'top-right'}"
+                                title="取消" onclick="cancelEdit();return false;">
+                            <i class="uk-icon-close"></i>
+                        </button>
+                    </div>
+                </form>
+                <div class="uk-button-group uk-margin-small-left">
+                    <button id="editButton" class="uk-button uk-button-small uk-button-primary"
+                            data-uk-tooltip="{pos:'top-left'}" title="修改项目路径" onclick="editDir();">
+                        <i class="uk-icon-edit"></i>
+                    </button>
+                    <button id="resetButton" class="uk-button uk-button-small uk-button-primary"
+                            data-uk-tooltip="{pos:'top-right'}" title="重新获取项目列表" onclick="resetDir(this);">
+                        <i class="uk-icon-refresh"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    {{ if .dir }}
+        <form class="uk-form">
+            <div class="uk-overflow-container">
+            {{ range $page,$dirG := .dir }}
+                <div id="page_{{ $page }}"
+                {{ if ne $page 1 }}
+                     class="uk-hidden"
+                {{ end }}
+                >
+                    <table class="uk-table uk-table-hover">
+                        <thead>
+                        <tr>
+                            <th><input type="checkbox" onclick="chooseAll(this);"></th>
+                            <th>项目名</th>
+                            <th>项目路径</th>
+                            <th>当前分支</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        {{ range $i,$dir:= $dirG }}
+                        <tr>
+                            <td><input class="child-checkbox" type="checkbox" value="{{$i}}"></td>
+                            <td>{{ .Name }}</td>
+                            <td>{{ .Path }}</td>
+                            <td><span class="uk-badge">{{ .NowBranch }}</span></td>
+                        {{/*<select class="uk-margin-small-top">
+                                    {{ range $v := .Branch}}
+                                    <option value="{{ $v }}" {{ if eq $v $dir.NowBranch }} selected {{ end }}>{{ $v }}</option>
+                                    {{ end }}
+                                </select>*/}}
+                            <td>
+                                <div class="uk-button-group">
+                                    <a href="javascript:;" class="uk-button uk-button-mini uk-button-primary"
+                                       onclick="ajaxResetGit('{{ $i }}')">更新</a>
+                                    <a href="javascript:;" class="uk-button uk-button-mini uk-button-success"
+                                       onclick="ajaxChangeBranch('{{ $i }}','{{$page}}')">分支</a>
+                                    <a href="javascript:;" class="uk-button uk-button-mini uk-button-danger"
+                                       onclick="ajaxIgnorePath('{{ $i }}')">忽略</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {{ end }}
+                        </tbody>
+
+                    </table>
+                </div>
+            {{ end }}
+            </div>
+            <div class="uk-button-group">
+                <a href="javascript:;" class="uk-button uk-button-small uk-button-primary"
+                   onclick="ajaxResetGit()">批量更新</a>
+                <a href="javascript:;" class="uk-button uk-button-small uk-button-danger"
+                   onclick="ajaxIgnorePath()">批量忽略</a>
+            </div>
+        </form>
+        <ul class="uk-pagination" data-uk-pagination="{items:{{ .count }}, itemsOnPage:{{ .limit }}}"></ul>
+    {{ else }}
+        {{ template "layout/nil.html" }}
+    {{ end }}
+    </div>
+{{/*<span id="messageR"></span>*/}}
+{{/*<span>{{ .dir }}</span>*/}}
+
+</div>
+<div id="details" class="uk-modal">
+    <div class="uk-modal-dialog">
+        <a class="uk-modal-close uk-close"></a>
+        <h1>运行详情</h1>
+        <dl id="specific" class="uk-description-list-line">
+        {{/* 内容由ajaxResetGit方法生成 */}}
+        </dl>
+    </div>
+</div>
+</body>
+<script>
+    $('[data-uk-pagination]').on('select.uk.pagination', function (e, pageIndex) {
+        var page = pageIndex + 1;
+        $("#page_" + page).siblings().addClass("uk-hidden");
+        $("#page_" + page).toggleClass("uk-hidden");
+    });
+</script>
+</html>
+<!DOCTYPE html>

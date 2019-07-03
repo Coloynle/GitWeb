@@ -1,0 +1,31 @@
+<script>
+    $(function () {
+        if (url == "{{ urlfor "List.Get" }}"){
+            $(".urlList").addClass("uk-active")
+        }else if(url == "{{ urlfor "List.IgnoreList" }}"){
+            $(".urlIgnore").addClass("uk-active")
+        }
+    });
+
+    // 获取所有选中的子复选框
+    function getCheckBoxValues() {
+        let ids = '';
+        $(".child-checkbox").each(function () {
+            if (this.checked == true) {
+                ids += $(this).val() + ',';
+            }
+        });
+        ids = ids.substr(0,ids.length-1);
+        return ids
+    }
+
+    // 全选 全不选
+    function chooseAll(that) {
+        status = $(that).attr('checked');
+        if (status == 'checked') {
+            $(that).parents("table").find(".child-checkbox").prop('checked', 'true');
+        } else {
+            $(that).parents("table").find(".child-checkbox").removeProp('checked');
+        }
+    }
+</script>
