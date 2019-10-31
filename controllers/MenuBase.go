@@ -104,13 +104,13 @@ func VerifyPath(str string) (matched bool, err error, path string) {
 }
 
 // 修改config即刻生效并且存至user.conf
-func setConfig(key string,value string){
-	beego.AppConfig.Set(key,value)
-	cfg,_ := config.NewConfig("ini","conf/user.conf")
-	cfg.Set(key,value)
+func setConfig(key string, value string) {
+	beego.AppConfig.Set(key, value)
+	cfg, _ := config.NewConfig("ini", "conf/user.conf")
+	cfg.Set(key, value)
 	cfg.SaveConfigFile("conf/user.conf")
 	// 重载配置文件
-	beego.LoadAppConfig("ini","conf/app.conf")
+	beego.LoadAppConfig("ini", "conf/app.conf")
 }
 
 func (this *Menu) returnJson(code int, message string) *returnStatus {
@@ -121,11 +121,11 @@ func (this *Menu) returnJson(code int, message string) *returnStatus {
 	return result
 }
 
-func (this *Menu) stringToInt64(str string,sep string) []int64{
-	strs := strings.Split(str,sep)
-	arrInt64 := make([]int64,len(strs))
-	for i:=0;i< len(strs); i++{
-		arrInt64[i],_ = strconv.ParseInt(strs[i], 10, 64)
+func (this *Menu) stringToInt64(str string, sep string) []int64 {
+	strs := strings.Split(str, sep)
+	arrInt64 := make([]int64, len(strs))
+	for i := 0; i < len(strs); i++ {
+		arrInt64[i], _ = strconv.ParseInt(strs[i], 10, 64)
 	}
 	return arrInt64
 }

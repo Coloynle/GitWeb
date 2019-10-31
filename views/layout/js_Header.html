@@ -1,13 +1,13 @@
 <script>
     $(function () {
-        if (url == "{{ urlfor "Index.Get" }}"){
+        if (url == "{{ urlfor "Index.Get" }}") {
             $(".urlIndex").addClass("uk-active")
         }
-        else if (url == "{{ urlfor "List.Get" }}"){
+        else if (url == "{{ urlfor "List.Get" }}") {
             $(".urlList").addClass("uk-active")
-        }else if(url == "{{ urlfor "List.IgnoreList" }}"){
+        } else if (url == "{{ urlfor "List.IgnoreList" }}") {
             $(".urlIgnore").addClass("uk-active")
-        }else if(url == "{{ urlfor "System.Index" }}"){
+        } else if (url == "{{ urlfor "System.Index" }}") {
             $(".urlSetting").addClass("uk-active")
         }
     });
@@ -20,7 +20,7 @@
                 ids += $(this).val() + ',';
             }
         });
-        ids = ids.substr(0,ids.length-1);
+        ids = ids.substr(0, ids.length - 1);
         return ids
     }
 

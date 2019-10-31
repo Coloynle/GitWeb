@@ -72,7 +72,7 @@ func (G *CommandController) RemoveRep(slc []string) []string {
 
 func (G *CommandController) GetNowBranch(path string) string {
 	branch := G.gitSymbolic([]string{"--short", "-q", "HEAD"})
-	if branch == nil{
+	if branch == nil {
 		return "branch error"
 	}
 	return branch[0]

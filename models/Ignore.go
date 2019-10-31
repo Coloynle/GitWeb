@@ -20,7 +20,6 @@ func (i *Ignore) GetAll(limit int) []Ignore {
 	return all
 }
 
-
 func (i *Ignore) IsExist(where orm.Params) bool {
 	o := orm.NewOrm()
 	qs := o.QueryTable(i)
@@ -29,9 +28,9 @@ func (i *Ignore) IsExist(where orm.Params) bool {
 	}
 	err := qs.One(i)
 	if err == orm.ErrNoRows {
-		return  false
+		return false
 	} else {
-		return  true
+		return true
 	}
 }
 

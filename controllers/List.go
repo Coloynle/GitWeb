@@ -45,11 +45,11 @@ func (this *List) Prepare() {
 		this.FlushDir = true
 	}
 
-	matched,err,path := VerifyPath(beego.AppConfig.String("list::workpath"))
+	matched, err, path := VerifyPath(beego.AppConfig.String("list::workpath"))
 	if matched != true || err != nil {
-		panic( "路径错误，请修改路径为正确的格式")
+		panic("路径错误，请修改路径为正确的格式")
 		return
-	}else{
+	} else {
 		this.WorkPath = path
 	}
 	this.Limit, _ = beego.AppConfig.Int("list::limit")
@@ -270,7 +270,7 @@ func (this *List) IgnoreList() {
 	// 工作路径
 	this.Data["workPath"] = this.WorkPath
 
-	//test
+	// test
 	this.Data["ignore"] = this.ignore
 
 	this.TplName = "index/ignore.html"
@@ -301,13 +301,13 @@ func (this *List) getIgnorePage() map[int]IgnoreList {
 
 	// map 有序化
 	var ids []int
-	for id := range ignoreList{
-		ids = append(ids,id)
+	for id := range ignoreList {
+		ids = append(ids, id)
 	}
 	sort.Ints(ids)
 
-	for _,id := range ids{
-		 value = ignoreList[id]
+	for _, id := range ids {
+		value = ignoreList[id]
 		temp[value.Id] = value
 		count++
 		num++

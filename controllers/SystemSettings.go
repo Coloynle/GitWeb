@@ -16,7 +16,7 @@ type Config struct {
 	Value string
 }
 
-func (this *System) initConfigKeys()  {
+func (this *System) initConfigKeys() {
 	this.configKey = []string{
 		"appname",
 		"session::GitProjectDirectory",
@@ -52,9 +52,9 @@ func (this *System) SaveConfig() {
 		value := this.GetString(v)
 		this.conf = append(this.conf, Config{Key: v, Value: value})
 	}
-	for _, val := range this.conf{
+	for _, val := range this.conf {
 		setConfig(val.Key, val.Value)
 	}
 	redirectUrl := this.URLFor("System.Index")
-	this.Ctx.Redirect(302,redirectUrl)
+	this.Ctx.Redirect(302, redirectUrl)
 }

@@ -13,8 +13,7 @@ func (this *Index) Prepare() {
 	this.Data["url"] = this.Ctx.Input.GetData("uri")
 }
 
-func (this *Index) Get(){
+func (this *Index) Get() {
 
 	this.TplName = "index/index.html"
 }
-

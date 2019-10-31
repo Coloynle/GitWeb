@@ -6,6 +6,6 @@ type Tool struct {
 	beego.Controller
 }
 
-func (this *Tool) Prepare()  {
+func (this *Tool) Prepare() {
 
 }
