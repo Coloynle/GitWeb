@@ -1,9 +1,14 @@
 <script>
     $(function () {
-        if (url == "{{ urlfor "List.Get" }}"){
+        if (url == "{{ urlfor "Index.Get" }}"){
+            $(".urlIndex").addClass("uk-active")
+        }
+        else if (url == "{{ urlfor "List.Get" }}"){
             $(".urlList").addClass("uk-active")
         }else if(url == "{{ urlfor "List.IgnoreList" }}"){
             $(".urlIgnore").addClass("uk-active")
+        }else if(url == "{{ urlfor "System.Index" }}"){
+            $(".urlSetting").addClass("uk-active")
         }
     });
 

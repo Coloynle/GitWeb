@@ -3,7 +3,6 @@ package controllers
 import (
 	"GitWeb/models"
 	"encoding/json"
-	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/config"
 	"github.com/astaxie/beego/orm"
@@ -46,7 +45,13 @@ func (this *List) Prepare() {
 		this.FlushDir = true
 	}
 
-	this.WorkPath = beego.AppConfig.String("list::workpath")
+	matched,err,path := VerifyPath(beego.AppConfig.String("list::workpath"))
+	if matched != true || err != nil {
+		panic( "路径错误，请修改路径为正确的格式")
+		return
+	}else{
+		this.WorkPath = path
+	}
 	this.Limit, _ = beego.AppConfig.Int("list::limit")
 
 	// 当前请求URL
@@ -146,9 +151,7 @@ func (this *List) getDirPage() map[int]DirList {
 	page := 1
 	count := 0
 	max := dirList.Len()
-	fmt.Println(max)
 	for index := 1; index <= max; index++ {
-		fmt.Println("test12321")
 		if len(this.ignore) == 0 {
 			temp[index] = dirList[index]
 			count++
@@ -240,7 +243,7 @@ func (this *List) ResetDir() {
 		message = "获取成功"
 	} else {
 		code = 0
-		message = "获取失败或目录下无git项目，请重新设置工作目录"
+		message = "获取失败,目录不存在或目录下无git项目，请重新设置工作目录"
 	}
 	this.Data["json"] = this.returnJson(code, message)
 	this.ServeJSON()

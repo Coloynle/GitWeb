@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/config"
 	"regexp"
@@ -75,29 +74,33 @@ func (m *MySqlConn) GetDataSource() string {
 func (this *Menu) SetWorkPath() {
 	str := this.GetString("path")
 
-	// 对输入路径进行格式验证并且格式化
-	str = strings.Replace(str,"\\","/",-1)
-	regstr := "\\/{2,}"
-	reg,_ := regexp.Compile(regstr)
-	str = reg.ReplaceAllString(str,"/")
-	last := str[len(str)-1:]
-	if last == "/" {
-		 str = str[0:len(str)-1]
-	}
-
-	matched, err := regexp.MatchString("^[A-Za-z]:(\\/[\u4E00-\u9FA5A-Za-z0-9]+)+$", str)
-	fmt.Println(matched,err)
+	matched, err, str := VerifyPath(str)
 	if matched != true || err != nil {
 		this.Data["json"] = this.returnJson(0, "路径错误，请修改路径为正确的格式")
 		this.ServeJSON()
 		return
 	}
 	this.WorkPath = str
-	setConfig("list::workpath",this.WorkPath)
+	setConfig("list::workpath", this.WorkPath)
 	result := this.returnJson(1, this.WorkPath)
 	this.Data["json"] = result
 	this.ServeJSON()
 	return
+}
+
+// 对输入路径进行格式验证并且格式化
+func VerifyPath(str string) (matched bool, err error, path string) {
+	// 对输入路径进行格式验证并且格式化
+	str = strings.Replace(str, "\\", "/", -1)
+	regstr := "\\/{2,}"
+	reg, _ := regexp.Compile(regstr)
+	str = reg.ReplaceAllString(str, "/")
+	last := str[len(str)-1:]
+	if last == "/" {
+		str = str[0 : len(str)-1]
+	}
+	matched, err = regexp.MatchString("^[A-Za-z]:(\\/[\u4E00-\u9FA5A-Za-z0-9]+)+$", str)
+	return matched, err, str
 }
 
 // 修改config即刻生效并且存至user.conf
@@ -106,6 +109,8 @@ func setConfig(key string,value string){
 	cfg,_ := config.NewConfig("ini","conf/user.conf")
 	cfg.Set(key,value)
 	cfg.SaveConfigFile("conf/user.conf")
+	// 重载配置文件
+	beego.LoadAppConfig("ini","conf/app.conf")
 }
 
 func (this *Menu) returnJson(code int, message string) *returnStatus {

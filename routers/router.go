@@ -7,8 +7,12 @@ import (
 )
 
 func init() {
+	Index := &controllers.Index{}
 	List := &controllers.List{}
 	Menu := &controllers.Menu{}
+	System := &controllers.System{}
+
+	beego.Router("/",Index,"*:Get")
 
 	ns :=
 		beego.NewNamespace("/v1",
@@ -20,7 +24,7 @@ func init() {
 			}),
 			beego.NSBefore(),
 			beego.NSNamespace("/list",
-				beego.NSRouter("/get", List, "get:Get"),
+				beego.NSRouter("/", List, "get:Get"),
 				beego.NSRouter("/reset", List, "get:ResetDir"),
 				beego.NSRouter("/test", List, "get:Test"),
 			),beego.NSNamespace("/git",
@@ -29,7 +33,7 @@ func init() {
 				beego.NSRouter("/branch/change", List, "post:ChangeBranch"),
 				// beego.NSRouter("/test", List, "get:Test"),
 			),beego.NSNamespace("/ignore",
-				beego.NSRouter("/get", List, "get:IgnoreList"),
+				beego.NSRouter("/", List, "get:IgnoreList"),
 				beego.NSRouter("/set", List, "post:SetIgnore"),
 				beego.NSRouter("/statusChange", List, "post:UpdateIgnoreStatus"),
 				beego.NSRouter("/delete", List, "post:DeleteIgnore"),
@@ -37,6 +41,8 @@ func init() {
 				// beego.NSRouter("/test", List, "get:Test"),
 			),beego.NSNamespace("/setting",
 				beego.NSRouter("/workPath", Menu, "post:SetWorkPath"),
+				beego.NSRouter("/", System, "get:Index"),
+				beego.NSRouter("/save", System, "post:SaveConfig"),
 				// beego.NSRouter("/test", List, "get:Test"),
 			),
 		)

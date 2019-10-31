@@ -84,36 +84,3 @@ func (i *Ignore) Delete(where orm.Params) (int64, error) {
 		return -1, err
 	}
 }
-
-//
-// // 查询全部数据
-// func (i *Ignore) SelectAll(Field []string) []Ignores {
-// 	baseModel := GetInstance(&MysqlConnPool{})
-// 	var nIgnore []Ignore
-// 	var nIgnores []Ignores
-// 	baseModel.Select("Find",&nIgnore,Field,nil,nil,nil).Scan(&nIgnores)
-// 	return nIgnores
-// }
-//
-// // 插入数据
-// func (i *Ignore) Add() uint {
-// 	baseModel := GetInstance(&MysqlConnPool{})
-// 	// 调用 公用Add方法获取 true 插入成功
-// 	if baseModel.Add(&i){
-// 		return i.ID
-// 	}else {
-// 		return 0
-// 	}
-// }
-//
-// func (i *Ignore) Update(where interface{}) bool{
-// 	baseModel := GetInstance(&MysqlConnPool{})
-// 	return baseModel.Update(&i,where)
-// }
-//
-// type Ignores struct {
-// 	Id     int    `json:"id"`
-// 	Name   string `json:"name"`
-// 	Path   string `json:"path"`
-// 	Status int   `json:"status"`
-// }

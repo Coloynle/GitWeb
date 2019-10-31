@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>系统设置</title>
+{{ template "layout/htmlHeader.html" }}
+    <script>
+        url = "{{ .url }}";
+    </script>
+</head>
+<body>
+{{ template "layout/js_Header.html" }}
+{{ template "layout/header.html" }}
+<div class="uk-container uk-container-center uk-margin-large-top">
+    <div class="uk-panel uk-panel-box">
+        <div class="uk-clearfix uk-margin-small-bottom">
+            <h3 class="uk-panel-title uk-float-left">
+                <i class="uk-icon-gear"></i>
+                系统设置
+            </h3>
+        </div>
+    {{ if .setting}}
+        <form method="post" action="{{ urlfor "System.SaveConfig" }}">
+            <ul class="uk-list uk-list-striped uk-form uk-form-horizontal" id="setting_list">
+            {{ range $conf := .setting }}
+                <li>
+                    <label class="uk-form-label" for="{{ .Key }}">{{ .Key }}</label>
+                    <div class="uk-form-controls">
+                        <input class="uk-width-1-1" type="text" id="{{ .Key }}" name="{{ .Key }}"
+                               placeholder="{{ .Value }}" value="{{ .Value }}">
+                    </div>
+                </li>
+            {{end}}
+            </ul>
+            <div class="uk-button-group uk-width-1-1">
+                <button class="uk-button uk-button-primary uk-width-1-2" type="submit">修改</button>
+                <button onclick="reset_setting_list();" class="uk-button uk-button-danger uk-width-1-2" type="button">还原</button>
+            </div>
+        </form>
+    {{ else }}
+        {{ template "layout/nil.html" }}
+        {{ end }}
+    </div>
+</div>
+</body>
+<script>
+    function reset_setting_list() {
+        $('#setting_list li input').each(function () {
+            $(this).val($(this).attr('placeholder'));
+        })
+    }
+</script>
+</html>

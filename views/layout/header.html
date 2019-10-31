@@ -1,10 +1,24 @@
 <nav class="tm-navbar uk-navbar uk-navbar-attached">
     <div class="uk-container uk-container-center">
         <ul class="uk-navbar-nav uk-hidden-small">
-            <li><a href="">开始使用</a></li>
+            <li class="urlIndex"><a href="{{ urlfor "Index.Get" }}">开始使用</a></li>
             <li class="urlList"><a href="{{ urlfor "List.Get" }}">项目列表</a></li>
             <li class="urlIgnore"><a href="{{ urlfor "List.IgnoreList" }}">忽略目录</a></li>
-            <li class="settingSys"><a href="{{ urlfor "settingSys" }}">系统设置</a></li>
+            <li class="uk-parent settingSys" data-uk-dropdown="" aria-haspopup="true" aria-expanded="false">
+                <a>小工具</a>
+                <div class="uk-dropdown uk-dropdown-navbar uk-dropdown-bottom" style="top: 40px; left: 0px;">
+                    <ul class="uk-nav uk-nav-navbar">
+                        <li><a href="#">Unix时间戳(Unix timestamp)</a></li>
+                        <li><a href="#">Another item</a></li>
+                        <li class="uk-nav-header">Header</li>
+                        <li><a href="#">Item</a></li>
+                        <li><a href="#">Another item</a></li>
+                        <li class="uk-nav-divider"></li>
+                        <li><a href="#">Separated item</a></li>
+                    </ul>
+                </div>
+            </li>
+            <li class="urlSetting"><a href="{{ urlfor "System.Index" }}">系统设置</a></li>
         </ul>
     </div>
 </nav>

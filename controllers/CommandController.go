@@ -45,10 +45,6 @@ func main() {
 // 获取分支列表
 func (G *CommandController) GetBranchList(path string) []string {
 	G.WorkDir = path
-	// localBranch := G.gitBranch([]string{})
-	// for i := 0; i < len(localBranch); i++ {
-	// 	fmt.Println(localBranch[i])
-	// }
 	allBranch := G.gitBranch([]string{"-a"})
 	for i := 0; i < len(allBranch); i++ {
 		allBranch[i] = strings.Replace(allBranch[i], "  ", "", 1)
