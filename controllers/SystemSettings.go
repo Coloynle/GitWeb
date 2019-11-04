@@ -34,20 +34,24 @@ func (this *System) initConfigKeys() {
 	}
 }
 
+func (this *System) Prepare() {
+	// 初始化配置列表
+	this.initConfigKeys()
+	// 当前请求URL
+	this.Data["url"] = this.Ctx.Input.GetData("uri")
+}
+
 func (this *System) Index() {
 	this.initConfigKeys()
 	for _, v := range this.configKey {
 		value := beego.AppConfig.String(v)
 		this.conf = append(this.conf, Config{Key: v, Value: value})
 	}
-	// 当前请求URL
-	this.Data["url"] = this.Ctx.Input.GetData("uri")
 	this.Data["setting"] = this.conf
 	this.TplName = "system/index.html"
 }
 
 func (this *System) SaveConfig() {
-	this.initConfigKeys()
 	for _, v := range this.configKey {
 		value := this.GetString(v)
 		this.conf = append(this.conf, Config{Key: v, Value: value})

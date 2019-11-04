@@ -40,7 +40,7 @@
         </form>
     {{ else }}
         {{ template "layout/nil.html" }}
-        {{ end }}
+    {{ end }}
     </div>
 </div>
 </body>
@@ -48,7 +48,18 @@
     function reset_setting_list() {
         $('#setting_list li input').each(function () {
             $(this).val($(this).attr('placeholder'));
-        })
+        });
     }
+
+    $('#setting_list li input').on('input propertychange', function () {
+        var value = $(this).val();
+        var placeholder = $(this).attr('placeholder');
+        if (value != placeholder) {
+            $(this).addClass('uk-form-danger');
+        } else {
+            $(this).removeClass('uk-form-danger');
+        }
+    });
+
 </script>
 </html>
